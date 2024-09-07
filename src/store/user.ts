@@ -3,8 +3,9 @@ import { defineStore } from "pinia";
 export type Role = "admin" | "custom" | "user";
 
 export const useUserRoleStore = defineStore("userInfo", {
-  state: (): { role: Role } => ({
+  state: (): { role: Role; name: string } => ({
     role: "user",
+    name: "david",
   }),
   getters: {
     getRole: (state) => state.role,
@@ -12,6 +13,9 @@ export const useUserRoleStore = defineStore("userInfo", {
   actions: {
     changeRole(role: Role) {
       this.role = role;
+    },
+    changeName(name: string) {
+      this.name = name;
     },
   },
   persist: {
