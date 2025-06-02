@@ -1,73 +1,66 @@
 <template>
-  <div>
-    <span>切换身份:</span>
-    <button @click="changeRoleFn('user')">user</button>
-    <button @click="changeRoleFn('custom')">custom</button>
-    <button @click="changeRoleFn('admin')">admin</button>
-  </div>
-  <div>
-    <span>跳转路由</span>
-    <button
-      @click="
-        () => {
-          router.push('/user');
-        }
-      ">
-      user
-    </button>
-    <button
-      @click="
-        () => {
-          router.push('/custom');
-        }
-      ">
-      custom
-    </button>
-    <button
-      @click="
-        () => {
-          router.push('/admin');
-        }
-      ">
-      admin
-    </button>
-  </div>
-  <div>
-    <RouterView></RouterView>
-  </div>
+  <router-view v-slot="{ Component,route  }">
+    <keep-alive :include="include" :exclude="excludes">
+      <transition name="fade-slide" mode="out-in">
+        <component :is="Component" :key="route.path" class="w-screen h-screen"/>
+      </transition>
+    </keep-alive>
+  </router-view>
 </template>
-
 <script setup lang="ts">
-import { filterRoleRoutes } from "./router";
-import { Role, useUserRoleStore } from "./store/user";
-import { useRouter } from "vue-router";
-import { useRoutesStore } from "./store/permission";
+import { useTestStore } from './store/test';
+import api from "@/api/customAxios"
+import { excludes } from '@/router/keepAlive'
 
-const userRoleStore = useUserRoleStore();
-const router = useRouter();
-const routeStore = useRoutesStore();
 
-const changeRoleFn = async (role: Role) => {
-  userRoleStore.changeRole(role);
 
-  // 内存添加路由表
-  const filterRoutes = routeStore.filterRoutes(userRoleStore.role);
-  filterRoutes.forEach((item) => {
-    router.addRoute(item);
-  });
-  // 路由更新，删除不符合当前身份的路由
-  filterRoleRoutes();
-  routeStore.filterRoutes(role);
-};
+const include = ['A', 'C']
 
-// TODO每次刷新的时候检查下更新路由表
-const filterRoutes = routeStore.filterRoutes(userRoleStore.role);
-filterRoutes.forEach((item) => {
-  router.addRoute(item);
-});
 
-// TODO 这里如果不手动更新跳转的话，route.path的值实际上是'/' 而不是你浏览器上显示的网络地址
-router.push(location.hash.replace(/#/, ""));
+
+const store = useTestStore();
+store.setName("david");
+console.log(store.getName);
+// api.get(
+//   `https://onlineservice-api.zhihuishu.com/gateway/t/v1/teacher/index2/queryLastSelectIdentity`,
+//   { recruitId: 1234, userId: 5678 },
+//   (resp: any) => {
+//     console.log(resp);
+
+//   },
+//   (error: any) => {
+//     console.log(error);
+
+//   })
+
+api.post("https://onlineservice-api.zhihuishu.com/gateway/t/v1/student/queryStudentAICourseList", {
+  "userId": 1234,
+  "courseId": 5678,
+  "type": 1,
+}, (resp: any) => {
+  console.log('post success', resp);
+
+}, (error: any) => {
+  console.log('post error', error);
+})
 </script>
 
-<style scoped></style>
+<style scoped>
+/* 过渡动画：左右滑动并且淡入淡出 */
+
+.fade-slide-enter-active, .fade-slide-leave-active {
+  transition: transform 1s ease, opacity 1s ease;
+}
+
+/* 进入动画：从右侧进入 */
+.fade-slide-enter {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+/* 离开动画：从左侧离开 */
+.fade-slide-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+</style>

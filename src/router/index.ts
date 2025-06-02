@@ -1,66 +1,49 @@
-import { createWebHashHistory, createRouter, RouteRecordRaw } from "vue-router";
-import { useUserRoleStore } from "../store/user";
+import { createRouter, createWebHistory } from "vue-router";
+import { publicRoutes } from "./publicRoutes";
+import { privateRoutes } from "./privateRoutes";
+function getRoutes() {
+  const routes = [
+    // 私有路由，请在这里添加
+    ...privateRoutes,
 
-import { userRoutes } from "./user";
-import { adminRoutes } from "./admin";
-import { customRoutes } from "./custom";
-import { useRoutesStore } from "../store/permission";
+    // 公共路由
+    ...publicRoutes,
+  ];
+  /**
+   * 如果要对 routes 做一些处理，请在这里修改
+   */
+  return routes;
+}
 
-// 导出所有的私密路由
-export const privateRoutes = userRoutes
-  .concat(adminRoutes)
-  .concat(customRoutes);
 
-const Home = () => import("../pages/home.vue");
-const Error = () => import("../pages/error.vue");
-
-export const publicRoutes: RouteRecordRaw[] = [
-  { name: "home", component: Home, children: [], path: "/" },
-  { name: "error", component: Error, children: [], path: "/error" },
-];
-
-export const router = createRouter({
-  history: createWebHashHistory(),
-  routes: publicRoutes,
+const router = createRouter({
+  history: createWebHistory(),
+  routes: getRoutes(),
 });
 
-// router.isReady().then(async () => {
-//   await addRoleRouters(); // 添加动态路由
-//   console.log("路由加载完了");
-// });
+// 全局前置守卫，这边可以对身份进行验证
+router.beforeEach((to, _from, next) => {
 
-//TODO 全局路由，跳转前，看是路由是否存在
-// 假设用户时已经登陆的，这里只是做路由的动态修改操作
-router.beforeEach(async (to, from, next) => {
-  const userRoleStore = useUserRoleStore();
-  const routeStore = useRoutesStore();
-  const filterRoutes = routeStore.filterRoutes(userRoleStore.role);
-  filterRoutes.forEach((item) => {
-    router.addRoute(item);
-  });
-  const exist = router.getRoutes().some((route) => route.path === to.path);
-  console.log("跳转前", router.getRoutes(), to.path, exist);
-  if (exist) {
+  let userRole = "admin";
+  // 如果目标路由没有角色限制
+  if (!to.meta.role) {
+    next();
+  }
+  // 判断当前用户角色是否在目标路由的允许角色列表中
+  if ((to.meta.role as string[]).includes(userRole)) {
+    // 如果角色匹配，允许进入目标路由
     next();
   } else {
-    next(false);
-    router.push("/error");
+    // 如果角色不匹配，跳转到 unauthorized 页面
+    next({ path: "/unauthorized" });
   }
 });
 
-//TODO 抛出添加路由的方法
+// 监听路由变化，动态设置网页标题
+router.afterEach((to) => {
+  if (to.meta.title) {
+    document.title = to.meta.title as string;
+  }
+});
 
-export const filterRoleRoutes = async () => {
-  const userRoleStore = useUserRoleStore();
-
-  let preRoutes = router.getRoutes();
-  preRoutes.forEach((route) => {
-    if (
-      route.meta.role &&
-      route.meta.role !== userRoleStore.role &&
-      route.name
-    ) {
-      router.removeRoute(route.name.toString());
-    }
-  });
-};
+export default router;

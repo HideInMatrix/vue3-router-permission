@@ -1,0 +1,12 @@
+/dist/*
+.local
+.output.js
+.github
+.vscode
+/node_modules/**
+
+*.html
+**/*.svg
+**/*.sh
+
+/public/**

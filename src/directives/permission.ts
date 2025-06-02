@@ -1,7 +1,7 @@
-import { useUserRoleStore } from "../store/user";
+import { useUserStore } from "@/store/user";
 
 function checkPermission(el: any, binding: any) {
-  const userRoleStore = useUserRoleStore();
+  const userRoleStore = useUserStore();
   // 获取绑定的值，此处为权限
   const { value } = binding;
   const userName = userRoleStore.name;

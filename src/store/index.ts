@@ -1,7 +1,13 @@
-import { createPinia } from "pinia";
-import piniaPluginPersistedstate from "pinia-plugin-persistedstate";
+// pinia数据持久化存储
+import { createPinia } from 'pinia'
+import { createPersistedState } from 'pinia-plugin-persistedstate'
+import { SelfStorage } from './secureStore'
 
-const pinia = createPinia();
-pinia.use(piniaPluginPersistedstate);
-
-export default pinia;
+// 第一个参数是应用程序中 store 的唯一 id
+const store = createPinia()
+store.use(
+  createPersistedState({
+    storage: SelfStorage
+  })
+)
+export default store
