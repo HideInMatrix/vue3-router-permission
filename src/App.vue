@@ -8,7 +8,6 @@
   </router-view>
 </template>
 <script setup lang="ts">
-import { useTestStore } from './store/test';
 import api from "@/api/customAxios"
 import { excludes } from '@/router/keepAlive'
 
@@ -18,9 +17,7 @@ const include = ['A', 'C']
 
 
 
-const store = useTestStore();
-store.setName("david");
-console.log(store.getName);
+
 // api.get(
 //   `https://onlineservice-api.zhihuishu.com/gateway/t/v1/teacher/index2/queryLastSelectIdentity`,
 //   { recruitId: 1234, userId: 5678 },
